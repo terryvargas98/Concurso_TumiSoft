@@ -53,15 +53,31 @@ class EmployeesController extends Controller
         $maximo_double = floatval($max);//convierto el maximo en double
 
         $arreglo=array();
+        $xml = new \SimpleXMLElement('<root/>');
            
         for ($i=0; $i < count($employees); $i++) { 
             if ((float)(str_replace(array(',','$'),"",$employees[$i]->salary)) > $minimo_double && (float)(str_replace(array(',','$'),"",$employees[$i]->salary)) < $maximo_double) {
                 
-                array_push($arreglo,$employees[$i]);   
+                $result = $xml->addChild("Employee");
+                foreach($employees[$i] as $name => $value){
+                
+                    if(is_array($value)){
+                        $array = $result->addChild("skills");
+
+                        foreach ($value as $key => $skill) {
+                            foreach ($skill as $nameKey => $data) {
+                                $array -> addChild($nameKey,$data);
+                            }
+                        ;
+                        }
+                    }else{
+                        $result->addChild($name,$value);
+                    }
+                    
             }
         }
-
-        return \response(\json_encode($arreglo),200)->header('Content-type','text/json');
+    }
+        return \response($xml->asXML(),200)->header('Content-type','text/xml');
     }
       
 }
